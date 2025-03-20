@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "WoFFCshTool": {
+      "commandName": "Project",
+      "commandLineArgs": "-csv \"U:\\Downloads\\map_encount_table.csh\""
+    },
+    "csv": {
+      "commandName": "Project",
+      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\encounter_data\\test_stuff\\tests\\enemy_group_list.csh\""
+    },
+    "csh": {
+      "commandName": "Project",
+      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\encounter_data\\test_stuff\\tests\\map_encount_table.csv\""
+    }
+  }
+}
