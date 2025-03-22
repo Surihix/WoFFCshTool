@@ -14,6 +14,7 @@
                     SupportMethods.ErrorExit("Enough arguments not specified. please launch the program with -? switch for more info.");
                 }
 
+                // Show Help
                 if (args[0] == "-?")
                 {
                     Console.WriteLine("Tool actions:");
@@ -32,13 +33,40 @@
                     Environment.Exit(0);
                 }
 
-                if (args.Length < 2)
-                {
-                    SupportMethods.ErrorExit("Enough arguments not specified for this process");
-                }
+                var inFile = string.Empty;
+                var toolAction = string.Empty;
 
-                var toolAction = args[0];
-                var inFile = args[1];
+                if (args.Length == 1)
+                {
+                    // Simple launch
+                    inFile = args[0];
+
+                    switch (Path.GetExtension(inFile))
+                    {
+                        case ".csh":
+                            toolAction = "-csv";
+                            break;
+
+                        case ".csv":
+                            toolAction = "-csh";
+                            break;
+
+                        default:
+                            SupportMethods.ErrorExit("Specified file's extension is invalid!");
+                            break;
+                    }
+                }
+                else
+                {
+                    // Function launch
+                    if (args.Length < 2)
+                    {
+                        SupportMethods.ErrorExit("Enough arguments not specified for this process!");
+                    }
+
+                    toolAction = args[0];
+                    inFile = args[1];
+                }
 
                 if (!File.Exists(inFile))
                 {

@@ -140,7 +140,7 @@ namespace WoFFCshTool
                                             Array.Reverse(readValueArray);
 
                                             cshVars.EntryFloatValue = BitConverter.ToSingle(readValueArray, 0);
-                                            cshVars.EntryOnCSV += cshVars.EntryIntValue.ToString();
+                                            cshVars.EntryOnCSV += cshVars.EntryIntValue.ToString() + "f";
                                         }
                                         break;
 
@@ -245,70 +245,67 @@ namespace WoFFCshTool
 
                         cshVars.EntryData = new List<byte>();
                        
-                        foreach (var entryFields in currentEntryData)
+                        foreach (var entryField in currentEntryData)
                         {
                             byte[] currentEntryDataBytes = Array.Empty<byte>();
 
-                            if (string.IsNullOrEmpty(entryFields))
+                            if (string.IsNullOrEmpty(entryField))
                             {
                                 // empty
                                 cshVars.EntryDataOffset = 0;
                                 cshVars.EntryDataType = 192;
                                 cshVars.EntryDataSizeMultiplier = 0;
                             }
+                            else if (entryField.EndsWith("f") && float.TryParse(entryField, NumberStyles.Float, CultureInfo.InvariantCulture, out cshVars.EntryFloatValue) == true)
+                            {
+                                // float
+                                cshVars.EntryDataOffset = (uint)offset;
+                                cshVars.EntryDataType = 128;
+                                cshVars.EntryDataSizeMultiplier = 1;
+                                currentEntryDataBytes = BitConverter.GetBytes(cshVars.EntryFloatValue);
+                                Array.Reverse(currentEntryDataBytes);
+                                offset += 4;                                
+                            } 
+                            else if (int.TryParse(entryField, NumberStyles.Integer, CultureInfo.InvariantCulture, out cshVars.EntryIntValue) == true)
+                            {
+                                // int
+                                cshVars.EntryDataOffset = (uint)offset;
+                                cshVars.EntryDataType = 64;
+                                cshVars.EntryDataSizeMultiplier = 1;
+                                currentEntryDataBytes = BitConverter.GetBytes(cshVars.EntryIntValue);
+                                Array.Reverse(currentEntryDataBytes);
+                                offset += 4;
+                            }
                             else
                             {
-                                if (int.TryParse(entryFields, NumberStyles.Integer, CultureInfo.InvariantCulture, out cshVars.EntryIntValue) == true)
+                                // string
+                                cshVars.EntryDataOffset = (uint)offset;
+                                cshVars.EntryDataType = 0;
+
+                                cshVars.EntryStringVal = entryField + "\0";
+                                var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
+                                var currentEntryStringValSize = currentEntryStringList.Count;
+
+                                if (currentEntryStringValSize % 4 != 0)
                                 {
-                                    // int
-                                    cshVars.EntryDataOffset = (uint)offset;
-                                    cshVars.EntryDataType = 64;
-                                    cshVars.EntryDataSizeMultiplier = 1;
-                                    currentEntryDataBytes = BitConverter.GetBytes(cshVars.EntryIntValue);
-                                    Array.Reverse(currentEntryDataBytes);
-                                    offset += 4;
-                                }
-                                else if (float.TryParse(entryFields, NumberStyles.Float, CultureInfo.InvariantCulture, out cshVars.EntryFloatValue) == true)
-                                {
-                                    // float
-                                    cshVars.EntryDataOffset = (uint)offset;
-                                    cshVars.EntryDataType = 128;
-                                    cshVars.EntryDataSizeMultiplier = 1;
-                                    currentEntryDataBytes = BitConverter.GetBytes(cshVars.EntryFloatValue);
-                                    Array.Reverse(currentEntryDataBytes);
-                                    offset += 4;
+                                    var remainder = currentEntryStringValSize % 4;
+                                    var increaseAmount = 4 - remainder;
+                                    currentEntryStringValSize += increaseAmount;
+
+                                    for (int p = 0; p < increaseAmount; p++)
+                                    {
+                                        currentEntryStringList.Add(0x00);
+                                    }
+
+                                    cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
                                 }
                                 else
                                 {
-                                    // string
-                                    cshVars.EntryDataOffset = (uint)offset;
-                                    cshVars.EntryDataType = 0;
-
-                                    cshVars.EntryStringVal = entryFields + "\0";
-                                    var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
-                                    var currentEntryStringValSize = currentEntryStringList.Count;
-
-                                    if (currentEntryStringValSize % 4 != 0)
-                                    {
-                                        var remainder = currentEntryStringValSize % 4;
-                                        var increaseAmount = 4 - remainder;
-                                        currentEntryStringValSize += increaseAmount;
-
-                                        for (int p = 0; p < increaseAmount; p++)
-                                        {
-                                            currentEntryStringList.Add(0x00);
-                                        }
-
-                                        cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
-                                    }
-                                    else
-                                    {
-                                        cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
-                                    }
-
-                                    offset += currentEntryStringValSize;
-                                    currentEntryDataBytes = currentEntryStringList.ToArray();
+                                    cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
                                 }
+
+                                offset += currentEntryStringValSize;
+                                currentEntryDataBytes = currentEntryStringList.ToArray();
                             }
 
                             preCmpEntryTableWriter.WriteBytesUInt32(cshVars.EntryDataOffset, true);
