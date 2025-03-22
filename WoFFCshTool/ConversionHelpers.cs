@@ -256,7 +256,7 @@ namespace WoFFCshTool
                                 cshVars.EntryDataType = 192;
                                 cshVars.EntryDataSizeMultiplier = 0;
                             }
-                            else if (entryField.EndsWith("f") && float.TryParse(entryField, NumberStyles.Float, CultureInfo.InvariantCulture, out cshVars.EntryFloatValue) == true)
+                            else if (entryField.EndsWith("f") && float.TryParse(entryField.Replace("f", ""), NumberStyles.Float, CultureInfo.InvariantCulture, out cshVars.EntryFloatValue) == true)
                             {
                                 // float
                                 cshVars.EntryDataOffset = (uint)offset;
