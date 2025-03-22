@@ -78,13 +78,13 @@ namespace WoFFCshTool
                     }
 
                     cshVars.FieldCount = dcmpCshReader.ReadBytesUInt32(true);
-                    cshVars.EntryTableCount = dcmpCshReader.ReadBytesUInt32(true) - 1;
+                    cshVars.RowsCount = dcmpCshReader.ReadBytesUInt32(true) - 1;
 
                     Console.WriteLine($"Field Count: {cshVars.FieldCount}");
-                    Console.WriteLine($"Entries Table Count: {cshVars.EntryTableCount}");
+                    Console.WriteLine($"Rows Count: {cshVars.RowsCount}");
                     Console.WriteLine("");
 
-                    // Jump to Entry table position
+                    // Jump to entries position
                     var entryTablePos = dcmpCshReader.BaseStream.Position += cshVars.FieldCount * 8;
 
                     // Read each entry and write to a csv file
@@ -99,7 +99,7 @@ namespace WoFFCshTool
                     {
                         var currentPos = entryTablePos;
 
-                        for (int i = 0; i < cshVars.EntryTableCount; i++)
+                        for (int i = 0; i < cshVars.RowsCount; i++)
                         {
                             for (int j = 0; j < cshVars.FieldCount; j++)
                             {
@@ -185,10 +185,10 @@ namespace WoFFCshTool
             }
 
             cshVars.FieldCount = (uint)csvData[0].Split(',').Length;
-            cshVars.EntryTableCount = (uint)csvData.Length;
+            cshVars.RowsCount = (uint)csvData.Length;
 
             Console.WriteLine($"Field Count: {cshVars.FieldCount}");
-            Console.WriteLine($"Entries Table Count: {cshVars.EntryTableCount}");
+            Console.WriteLine($"Entries Table Count: {cshVars.RowsCount}");
             Console.WriteLine("");
             Console.WriteLine("");
 
@@ -205,7 +205,7 @@ namespace WoFFCshTool
                     _ = preCmpHeaderWriter.BaseStream.Position = 0;
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.DcmpMagic, true);
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.FieldCount, true);
-                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.EntryTableCount + 1, true);
+                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.RowsCount + 1, true);
 
                     for (int i = 0; i < cshVars.FieldCount; i++)
                     {
@@ -233,7 +233,7 @@ namespace WoFFCshTool
                 {
                     _ = preCmpEntryTableWriter.BaseStream.Position = 0;
 
-                    long offset = headerSize + (cshVars.EntryTableCount * (cshVars.FieldCount * 8));
+                    long offset = headerSize + (cshVars.RowsCount * (cshVars.FieldCount * 8));
                     cshVars.EntryDataOffset = 0;
 
                     string[] currentEntryData;

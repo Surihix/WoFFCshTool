@@ -14,7 +14,7 @@
 
         public uint DcmpMagic = 0;        
         public uint FieldCount;
-        public uint EntryTableCount;
+        public uint RowsCount;
 
         public uint FirstTableReserved = 0;
         public byte FirstTableUnkVal = 0xA0;

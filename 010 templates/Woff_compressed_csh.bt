@@ -1,0 +1,37 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: Woff_compressed_csh.bt
+//   Authors: Surihix & doicm
+//   Version: 1.0
+//   Purpose: Parse compressed .csh file
+//  Category: World of Final Fantasy csh files
+// File Mask: *.csh
+//  ID Bytes: 00 68 73 63
+//   History: 
+//   1.0   2025-03-22 Surihix: Initial version
+//------------------------------------------------
+
+BigEndian();
+
+struct FILE
+{
+   char magic[4]<bgcolor=cDkGreen>;
+   Assert(magic == "\0hsc");
+
+   uint32 unkVal<comment="some constant maybe", bgcolor=cDkRed>;
+   uint32 unkVal2<comment="some constant maybe", bgcolor=cDkRed>;
+   uint32 unkVal3<comment="some constant maybe", bgcolor=cDkRed>;
+   uint32 reserved[6]<comment="always null", bgcolor=cBlack>;
+   uint32 unkVal4<comment="some constant maybe", bgcolor=cDkRed>;
+   uint32 reserved2[21]<comment="always null", bgcolor=cBlack>;
+
+   char magic2[4]<bgcolor=cDkGreen>;
+   Assert(magic2 == "BILZ");
+
+   uint32 decompressedDataSize<bgcolor=cDkGreen>;
+   uint32 compressedDataSize<bgcolor=cDkGreen>;
+   uint32 unkVal5<comment="some constant maybe", bgcolor=cDkRed>;   
+   ubyte compressedData[compressedDataSize]<bgcolor=cDkGreen>;
+
+}File<name="Woff_csh compressed file", open=true>;
