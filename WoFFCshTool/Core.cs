@@ -21,13 +21,17 @@
                     Console.WriteLine("-? = Display this help page");
                     Console.WriteLine("-csv = Converts the csh data into a new csv file");
                     Console.WriteLine("-csh = Converts the csv data into a new csh file");
-
                     Console.WriteLine("");
-
+                    Console.WriteLine("Drag 'n' drop csh file on tool = Converts the csh data into a new csv file");
+                    Console.WriteLine("Drag 'n' drop csv file on tool = Converts the csv data into a new csh file");
+                    Console.WriteLine("");
                     Console.WriteLine("Examples:");
                     Console.WriteLine("WoFFCshTool.exe -?");
                     Console.WriteLine("WoFFCshTool.exe -csv \"map_encount_table.csh\"");
                     Console.WriteLine("WoFFCshTool.exe -csh \"map_encount_table.csv\"");
+                    Console.WriteLine("WoFFCshTool.exe \"map_encount_table.csh\"");
+                    Console.WriteLine("WoFFCshTool.exe \"map_encount_table.csh\"");
+
 
                     Console.ReadLine();
                     Environment.Exit(0);
