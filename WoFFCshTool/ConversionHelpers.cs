@@ -140,7 +140,7 @@ namespace WoFFCshTool
                                             Array.Reverse(readValueArray);
 
                                             cshVars.EntryFloatValue = BitConverter.ToSingle(readValueArray, 0);
-                                            cshVars.EntryOnCSV += cshVars.EntryIntValue.ToString() + "f";
+                                            cshVars.EntryOnCSV += cshVars.EntryFloatValue.ToString() + "f";
                                         }
                                         break;
 
