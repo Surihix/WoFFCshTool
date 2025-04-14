@@ -1,8 +1,7 @@
 {
   "profiles": {
     "WoFFCshTool": {
-      "commandName": "Project",
-      "commandLineArgs": "-csv \"U:\\Downloads\\map_encount_table.csh\""
+      "commandName": "Project"
     },
     "csv": {
       "commandName": "Project",
@@ -10,7 +9,15 @@
     },
     "csh": {
       "commandName": "Project",
-      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\encounter_data\\test_stuff\\tests\\map_encount_table.csv\""
+      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\encounter_data\\test_stuff\\tests\\enemy_group_list.csv\""
+    },
+    "csv -st": {
+      "commandName": "Project",
+      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\tipsmsgdata\\tipsmsgdata.csh\" -st"
+    },
+    "csh -st": {
+      "commandName": "Project",
+      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\tipsmsgdata\\tipsmsgdata.csv\" -st"
     }
   }
 }

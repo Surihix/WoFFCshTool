@@ -30,5 +30,6 @@
         public int EntryIntValue;
         public float EntryFloatValue;
         public string? EntryOnCSV;
+        public char CSVDelimiter = '|';
     }
 }

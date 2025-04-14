@@ -84,7 +84,6 @@ namespace WoFFCshTool
                     Console.WriteLine($"Rows Count: {cshVars.RowsCount}");
                     Console.WriteLine("");
 
-                    // Jump to entries position
                     var entryTablePos = dcmpCshReader.BaseStream.Position += cshVars.FieldCount * 8;
 
                     // Read each entry and write to a csv file
@@ -95,7 +94,7 @@ namespace WoFFCshTool
                         File.Delete(outCsvFile);
                     }
 
-                    using (var csvWriter = new StreamWriter(outCsvFile, true, System.Text.Encoding.UTF8))
+                    using (var csvWriter = new StreamWriter(outCsvFile, true, Encoding.UTF8))
                     {
                         var currentPos = entryTablePos;
 
@@ -117,7 +116,7 @@ namespace WoFFCshTool
                                 {
                                     // string
                                     case 0:
-                                        cshVars.EntryOnCSV += System.Text.Encoding.UTF8.GetString(cshVars.EntryData.ToArray()).Replace("\0", "");
+                                        cshVars.EntryOnCSV += Encoding.UTF8.GetString(cshVars.EntryData.ToArray()).Replace("\0", "");
                                         break;
 
                                     // int
@@ -151,7 +150,7 @@ namespace WoFFCshTool
 
                                 if (j != cshVars.FieldCount - 1)
                                 {
-                                    cshVars.EntryOnCSV += ",";
+                                    cshVars.EntryOnCSV += cshVars.CSVDelimiter;
                                 }
 
                                 cshVars.EntryData.Clear();
@@ -184,7 +183,7 @@ namespace WoFFCshTool
                 SupportMethods.ErrorExit("Specified csv file is empty!");
             }
 
-            cshVars.FieldCount = (uint)csvData[0].Split(',').Length;
+            cshVars.FieldCount = (uint)csvData[0].Split(cshVars.CSVDelimiter).Length;
             cshVars.RowsCount = (uint)csvData.Length;
 
             Console.WriteLine($"Field Count: {cshVars.FieldCount}");
@@ -241,7 +240,7 @@ namespace WoFFCshTool
 
                     foreach (var entryData in csvData)
                     {
-                        currentEntryData = entryData.Split(',');
+                        currentEntryData = entryData.Split(cshVars.CSVDelimiter);
 
                         cshVars.EntryData = new List<byte>();
                        
