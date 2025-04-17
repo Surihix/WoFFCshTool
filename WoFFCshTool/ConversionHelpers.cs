@@ -5,6 +5,7 @@ namespace WoFFCshTool
 {
     internal class ConversionHelpers
     {
+        #region -csv
         public static void ConvertToCsv(string cshFile)
         {
             var cshVars = new CshVariables();
@@ -78,13 +79,13 @@ namespace WoFFCshTool
                     }
 
                     cshVars.FieldCount = dcmpCshReader.ReadBytesUInt32(true);
-                    cshVars.RowsCount = dcmpCshReader.ReadBytesUInt32(true) - 1;
+                    cshVars.RowsCount = dcmpCshReader.ReadBytesUInt32(true);
 
                     Console.WriteLine($"Field Count: {cshVars.FieldCount}");
                     Console.WriteLine($"Rows Count: {cshVars.RowsCount}");
                     Console.WriteLine("");
 
-                    var entryTablePos = dcmpCshReader.BaseStream.Position += cshVars.FieldCount * 8;
+                    var entryTablePos = dcmpCshReader.BaseStream.Position;
 
                     // Read each entry and write to a csv file
                     var outCsvFile = Path.Combine(Path.GetDirectoryName(cshFile), Path.GetFileNameWithoutExtension(cshFile) + ".csv");
@@ -146,6 +147,11 @@ namespace WoFFCshTool
                                     // empty
                                     case 192:
                                         break;
+
+                                    // unknown
+                                    default:
+                                        cshVars.EntryOnCSV += $"0x{cshVars.EntryDataType.ToString("X2")}";
+                                        break;
                                 }
 
                                 if (j != cshVars.FieldCount - 1)
@@ -170,8 +176,10 @@ namespace WoFFCshTool
             Console.WriteLine("");
             Console.WriteLine("Finished writing csh data to csv file");
         }
+        #endregion
 
 
+        #region -csh
         public static void ConvertToCsh(string csvFile)
         {
             var cshVars = new CshVariables();
@@ -204,15 +212,7 @@ namespace WoFFCshTool
                     _ = preCmpHeaderWriter.BaseStream.Position = 0;
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.DcmpMagic, true);
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.FieldCount, true);
-                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.RowsCount + 1, true);
-
-                    for (int i = 0; i < cshVars.FieldCount; i++)
-                    {
-                        preCmpHeaderWriter.WriteBytesUInt32(cshVars.FirstTableReserved, true);
-                        preCmpHeaderWriter.Write(cshVars.FirstTableUnkVal);
-                        preCmpHeaderWriter.Write(cshVars.FirstTableReservedArray);
-                    }
-
+                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.RowsCount, true);
                     headerSize = preCmpHeaderWriter.BaseStream.Length;
 
                     preCmpHeaderStream.Seek(0, SeekOrigin.Begin);
@@ -277,34 +277,44 @@ namespace WoFFCshTool
                             }
                             else
                             {
-                                // string
-                                cshVars.EntryDataOffset = (uint)offset;
-                                cshVars.EntryDataType = 0;
-
-                                cshVars.EntryStringVal = entryField + "\0";
-                                var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
-                                var currentEntryStringValSize = currentEntryStringList.Count;
-
-                                if (currentEntryStringValSize % 4 != 0)
+                                if (entryField.StartsWith("0x"))
                                 {
-                                    var remainder = currentEntryStringValSize % 4;
-                                    var increaseAmount = 4 - remainder;
-                                    currentEntryStringValSize += increaseAmount;
-
-                                    for (int p = 0; p < increaseAmount; p++)
-                                    {
-                                        currentEntryStringList.Add(0x00);
-                                    }
-
-                                    cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
+                                    // unknown
+                                    cshVars.EntryDataOffset = 0;
+                                    cshVars.EntryDataType = Convert.ToByte(entryField.Substring(2), 16);
+                                    cshVars.EntryDataSizeMultiplier = 0;
                                 }
                                 else
                                 {
-                                    cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
-                                }
+                                    // string
+                                    cshVars.EntryDataOffset = (uint)offset;
+                                    cshVars.EntryDataType = 0;
 
-                                offset += currentEntryStringValSize;
-                                currentEntryDataBytes = currentEntryStringList.ToArray();
+                                    cshVars.EntryStringVal = entryField + "\0";
+                                    var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
+                                    var currentEntryStringValSize = currentEntryStringList.Count;
+
+                                    if (currentEntryStringValSize % 4 != 0)
+                                    {
+                                        var remainder = currentEntryStringValSize % 4;
+                                        var increaseAmount = 4 - remainder;
+                                        currentEntryStringValSize += increaseAmount;
+
+                                        for (int p = 0; p < increaseAmount; p++)
+                                        {
+                                            currentEntryStringList.Add(0x00);
+                                        }
+
+                                        cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
+                                    }
+                                    else
+                                    {
+                                        cshVars.EntryDataSizeMultiplier = (ushort)(currentEntryStringValSize / 4);
+                                    }
+
+                                    offset += currentEntryStringValSize;
+                                    currentEntryDataBytes = currentEntryStringList.ToArray();
+                                }
                             }
 
                             preCmpEntryTableWriter.WriteBytesUInt32(cshVars.EntryDataOffset, true);
@@ -381,10 +391,10 @@ namespace WoFFCshTool
                 cshStreamWriter.WriteBytesUInt32(cshVars.CmpUnkVal, true);
                 cshStreamWriter.WriteBytesUInt32(cshVars.CmpUnkVal2, true);
                 cshStreamWriter.WriteBytesUInt32(cshVars.CmpUnkVal3, true);
-                PadReservedBytes(cshStreamWriter, 6, cshVars);
+                PadReservedBytes(cshStreamWriter, 6);
 
                 cshStreamWriter.WriteBytesUInt32(cshVars.CmpUnkVal4, true);
-                PadReservedBytes(cshStreamWriter, 21, cshVars);
+                PadReservedBytes(cshStreamWriter, 21);
 
                 cshStreamWriter.Write(Encoding.UTF8.GetBytes(cshVars.CmpZLIBMagic));
                 cshStreamWriter.WriteBytesUInt32(cshVars.DcmpSize, true);
@@ -400,12 +410,13 @@ namespace WoFFCshTool
         }
 
 
-        private static void PadReservedBytes(BinaryWriter cshStreamWriter, int padAmount, CshVariables cshVars)
+        private static void PadReservedBytes(BinaryWriter cshStreamWriter, int padAmount)
         {
             for (int l = 0; l < padAmount; l++)
             {
                 cshStreamWriter.WriteBytesUInt32(0, false);
             }
         }
+        #endregion
     }
 }
