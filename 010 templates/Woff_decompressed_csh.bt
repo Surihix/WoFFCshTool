@@ -1,34 +1,27 @@
-//------------------------------------------------
+//------------------------------------------------------------
 //--- 010 Editor v12.0.1 Binary Template
 //
 //      File: Woff_decompressed_csh.bt
 //   Authors: Surihix & doicm
-//   Version: 1.0
+//   Version: 1.1
 //   Purpose: Parse decompressed .csh data
 //  Category: World of Final Fantasy csh files
 // File Mask: *.csh
 //  ID Bytes: 00 00 00 00
 //   History: 
 //   1.0   2025-03-22 Surihix: Initial version
-//------------------------------------------------
+//   1.1   2025-04-16 Surihix: Removed OffsetTableA section
+//------------------------------------------------------------
 
 BigEndian();
 
 local int64 lastPos = 0;
 local uint32 fieldCount = 0; 
 
-typedef struct OFFSETTABLEA
-{
-    uint32 reserved<comment="always null", bgcolor=cBlack>;
-    ubyte unkVal<comment="some constant maybe", bgcolor=cDkRed>;
-    ubyte reserved2[3]<comment="always null", bgcolor=cBlack>;
-}OffsetTableA;
-
-
 typedef struct CSVENTRY
 {
     uint32 offset<bgcolor=cDkGreen>;
-    ubyte valueType<comment="'0' == stringData, '64' == intData, '128' == floatData, & '192' == empty", bgcolor=cDkGreen>;
+    ubyte valueType<comment="'0' == stringData, '64' == intData, '128' == floatData, '160' == unk & '192' == empty", bgcolor=cDkGreen>;
     ubyte reserved<comment="always null", bgcolor=cBlack>;
     uint16 sizeMultiplier<comment="multiply this with '4' for size", bgcolor=cDkGreen>;
     lastPos = FTell();
@@ -37,27 +30,31 @@ typedef struct CSVENTRY
     {
        FSeek(offset);
        local uint32 size = 4 * sizeMultiplier;
-
-       switch (valueType)
-       {
-              case 0:
-                   char stringData[size]<comment="in utf-8, terminates with a null byte and has additional padding", bgcolor=cDkGreen>;
-                   break;
-
-              case 64:
-                   int32 intData<bgcolor=cDkGreen>;
-                   break;
-
-              case 128:
-                   float floatData<bgcolor=cDkGreen>;
-                   break;
-
-              case 192:
-                   break;
-       }
     }
-  
+
+    switch (valueType)
+    {
+           case 0:
+                char stringData[size]<comment="in utf-8, terminates with a null byte and has additional padding", bgcolor=cDkGreen>;
+                break;
+
+           case 64:
+                int32 intData<bgcolor=cDkGreen>;
+                break;
+
+           case 128:
+                float floatData<bgcolor=cDkGreen>;
+                break;
+
+           case 192:
+                break;
+
+           case 160:
+                break;
+    }
+
     FSeek(lastPos);
+  
 }CSVEntry;
 
 
@@ -77,14 +74,9 @@ struct FILE
 
    uint32 csvRowCount<bgcolor=cDkGreen>;
 
-   struct OFFSETTABLEASTRUCT
-   {
-       OffsetTableA offsetTableA[fieldsAndTableACount]<optimize=false, name="Table-A">;
-   }OffsetTableAstruct<name="Offset Table-A set", open=false>;
-
    struct ENTRIESSTRUCT
    {
-       CSVRows csvRows[csvRowCount - 1]<optimize=false, name="Row">;
+       CSVRows csvRows[csvRowCount]<optimize=false, name="Row">;
    }EntriesStruct<name="CSV rows", open=false>;
 
 }File<name="Woff_csh decompressed file", open=true>;

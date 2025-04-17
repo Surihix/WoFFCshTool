@@ -16,10 +16,6 @@
         public uint FieldCount;
         public uint RowsCount;
 
-        public uint FirstTableReserved = 0;
-        public byte FirstTableUnkVal = 0xA0;
-        public byte[] FirstTableReservedArray = new byte[3] { 0x00, 0x00, 0x00 };
-
         public uint EntryDataOffset;
         public byte EntryDataType;
         public byte EntryReserved = 0x00;
