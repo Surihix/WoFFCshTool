@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <Copyright>Copyright © Surihix 2025</Copyright>
     <Company>Surihix</Company>
-    <FileVersion>1.0.0.2</FileVersion>
-    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.0.3</FileVersion>
+    <AssemblyVersion>1.0.0.3</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

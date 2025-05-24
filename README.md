@@ -21,6 +21,8 @@ This program allows you to convert the csh database files from World of Final Fa
 
 - Floating point type values will have a `f` string character, appended after the last digit. if you are entering a floating point value, then make sure to put the `f` string character after the last digit.
 
-- Its recommended to use Libre Office suite's Calc program to view/edit the csv file. MS excel is not recommended as it screws up the data in the csv, thereby corrupting the file in the process.
+- Return carriage characters (or the new line character) in strings, will be represented as ``{NewLine}``.
 
+- Its recommended to use Libre Office suite's Calc program to view/edit the csv file. MS excel is not recommended as it screws up the data in the csv, thereby corrupting the file in the process.
+ 
 - Please report any problems that you encounter with the converted csv/csh files by opening an issue page detailing the issue here.

@@ -5,11 +5,11 @@
     },
     "csv": {
       "commandName": "Project",
-      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\enemy_group_list.csh\""
+      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\itembook.csh\""
     },
     "csh": {
       "commandName": "Project",
-      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\enemy_group_list.csv\""
+      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\itembook.csv\""
     }
   }
 }
