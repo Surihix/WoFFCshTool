@@ -34,6 +34,16 @@ namespace WoFFCshTool
         }
 
 
+        public static string FixStringFromCsh(string cshString)
+        {
+            var fixedString = cshString;
+            fixedString = fixedString.Replace("\0", "");
+            fixedString = fixedString.Replace("\0", "").Replace("\r\n", "{NewLine}");
+
+            return fixedString;
+        }
+
+
         public static byte[] ZlibCompressBuffer(byte[] dataToCmp)
         {
             var compressedDataBuffer = Array.Empty<byte>();
@@ -51,6 +61,15 @@ namespace WoFFCshTool
             }
 
             return compressedDataBuffer;
+        }
+
+
+        public static string FixStringFromCsv(string csvString)
+        {
+            var fixedString = csvString;
+            fixedString = fixedString.Replace("{NewLine}", "\r\n");
+
+            return fixedString;
         }
     }
 }

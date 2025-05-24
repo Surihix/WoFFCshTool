@@ -117,7 +117,8 @@ namespace WoFFCshTool
                                 {
                                     // string
                                     case 0:
-                                        cshVars.EntryOnCSV += Encoding.UTF8.GetString(cshVars.EntryData.ToArray()).Replace("\0", "");
+                                        var readStringValue = SupportMethods.FixStringFromCsh(Encoding.UTF8.GetString(cshVars.EntryData.ToArray()));
+                                        cshVars.EntryOnCSV += readStringValue;
                                         break;
 
                                     // int
@@ -290,7 +291,8 @@ namespace WoFFCshTool
                                     cshVars.EntryDataOffset = (uint)offset;
                                     cshVars.EntryDataType = 0;
 
-                                    cshVars.EntryStringVal = entryField + "\0";
+                                    var readStringVal = entryField + "\0";
+                                    cshVars.EntryStringVal = SupportMethods.FixStringFromCsv(readStringVal);
                                     var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
                                     var currentEntryStringValSize = currentEntryStringList.Count;
 
