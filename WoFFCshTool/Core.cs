@@ -4,7 +4,9 @@
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("");
             Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.WriteLine("[WoFFCshTool v1.0.4]");
             Console.WriteLine("");
 
             try
@@ -25,13 +27,16 @@
                     Console.WriteLine("Drag 'n' drop csh file on tool = Converts the csh data into a new csv file");
                     Console.WriteLine("Drag 'n' drop csv file on tool = Converts the csv data into a new csh file");
                     Console.WriteLine("");
+                    Console.WriteLine("By default the -csh converter, will use utf8 encoding.");
+                    Console.WriteLine("If the csv file's encoding is in shift-jis, then specify an optional --shift-jis switch after the filepath.");
+                    Console.WriteLine("");
                     Console.WriteLine("Examples:");
                     Console.WriteLine("WoFFCshTool.exe -?");
                     Console.WriteLine("WoFFCshTool.exe -csv \"map_encount_table.csh\"");
                     Console.WriteLine("WoFFCshTool.exe -csh \"map_encount_table.csv\"");
+                    Console.WriteLine("WoFFCshTool.exe -csh \"map_encount_table.csv\" --shift-jis");
                     Console.WriteLine("WoFFCshTool.exe \"map_encount_table.csh\"");
                     Console.WriteLine("WoFFCshTool.exe \"map_encount_table.csh\"");
-
 
                     Console.ReadLine();
                     Environment.Exit(0);
@@ -39,6 +44,7 @@
 
                 var inFile = string.Empty;
                 var toolAction = string.Empty;
+                var useShiftJIS = false;
 
                 if (args.Length == 1)
                 {
@@ -70,6 +76,11 @@
 
                     toolAction = args[0];
                     inFile = args[1];
+
+                    if (toolAction == "-csh" && args.Length > 2 && args[2] == "--shift-jis")
+                    {
+                        useShiftJIS = true;
+                    }
                 }
 
                 if (!File.Exists(inFile))
@@ -80,11 +91,11 @@
                 switch (toolAction)
                 {
                     case "-csh":
-                        ConversionHelpers.ConvertToCsh(inFile);
+                        CshConverter.ConvertToCsh(inFile, useShiftJIS);
                         break;
 
                     case "-csv":
-                        ConversionHelpers.ConvertToCsv(inFile);
+                        CsvConverter.ConvertToCsv(inFile);
                         break;
 
                     default:

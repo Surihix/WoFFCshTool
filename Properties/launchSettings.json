@@ -5,11 +5,11 @@
     },
     "csv": {
       "commandName": "Project",
-      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\itembook.csh\""
+      "commandLineArgs": "-csv \"S:\\Modding projects\\quick\\fishing_table.csh\""
     },
     "csh": {
       "commandName": "Project",
-      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\WoFF_stuff\\csh_tests\\tests\\itembook.csv\""
+      "commandLineArgs": "-csh \"S:\\Modding projects\\quick\\fishing_table.csv\" --shift-jis"
     }
   }
 }

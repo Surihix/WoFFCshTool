@@ -12,7 +12,7 @@
         public uint CmpSize;
         public uint CmpUnkVal5 = 7;
 
-        public uint DcmpMagic = 0;        
+        public uint EncodingFlag;        
         public uint FieldCount;
         public uint RowsCount;
 

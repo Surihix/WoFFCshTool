@@ -3,7 +3,7 @@
 //
 //      File: Woff_decompressed_csh.bt
 //   Authors: Surihix & doicm
-//   Version: 1.1
+//   Version: 1.2
 //   Purpose: Parse decompressed .csh data
 //  Category: World of Final Fantasy csh files
 // File Mask: *.csh
@@ -11,6 +11,7 @@
 //   History: 
 //   1.0   2025-03-22 Surihix: Initial version
 //   1.1   2025-04-16 Surihix: Removed OffsetTableA section
+//   1.2   2026-06-07 Surihix: Changed magic to encoding flag
 //------------------------------------------------------------
 
 BigEndian();
@@ -66,8 +67,7 @@ typedef struct CSVROWS
 
 struct FILE
 {
-   uint magic<bgcolor=cDkGreen>;
-   Assert(magic == 0);
+   uint encodingFlag<comment="0 == utf8 encoding & 1 == shift-jis encoding", bgcolor=cDkGreen>;
 
    uint32 fieldsAndTableACount<bgcolor=cDkGreen>;
    fieldCount = fieldsAndTableACount;

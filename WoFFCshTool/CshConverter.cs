@@ -3,189 +3,28 @@ using System.Text;
 
 namespace WoFFCshTool
 {
-    internal class ConversionHelpers
+    internal class CshConverter
     {
-        #region -csv
-        public static void ConvertToCsv(string cshFile)
+        public static void ConvertToCsh(string csvFile, bool useShiftJIS)
         {
             var cshVars = new CshVariables();
 
-            byte[] dcmpCshData;
+            Encoding csvEncoding;
 
-            Console.WriteLine("Decompressing csh file....");
-            Console.WriteLine("");
-
-            using (var cmpCshReader = new BinaryReader(File.Open(cshFile, FileMode.Open, FileAccess.Read)))
+            if (useShiftJIS)
             {
-                // Read cmp header values and
-                // do basic checks
-                if (cmpCshReader.BaseStream.Length < 144)
-                {
-                    SupportMethods.ErrorExit("csh file is too small in size!");
-                }
-
-                _ = cmpCshReader.BaseStream.Position = 0;
-
-                if (cmpCshReader.ReadBytesString(4, false) != cshVars.CmpMagic)
-                {
-                    SupportMethods.ErrorExit("Not a valid csh file!");
-                }
-
-                _ = cmpCshReader.BaseStream.Position += 124;
-
-                if (cmpCshReader.ReadBytesString(4, false) != cshVars.CmpZLIBMagic)
-                {
-                    SupportMethods.ErrorExit("Not a valid csh file!");
-                }
-
-                cshVars.DcmpSize = cmpCshReader.ReadBytesUInt32(true);
-                cshVars.CmpSize = cmpCshReader.ReadBytesUInt32(true);
-                cshVars.CmpUnkVal5 = cmpCshReader.ReadBytesUInt32(true);
-
-                var cmpData = new byte[cshVars.CmpSize];
-                cmpData = cmpCshReader.ReadBytes((int)cshVars.CmpSize);
-
-                using (var cmpStream = new MemoryStream())
-                {
-                    cmpStream.Write(cmpData, 0, (int)cshVars.CmpSize);
-                    cmpStream.Seek(0, SeekOrigin.Begin);
-
-                    dcmpCshData = SupportMethods.ZlibDecompressBuffer(cmpStream);
-                }
+                cshVars.EncodingFlag = 1;
+                csvEncoding = CodePagesEncodingProvider.Instance.GetEncoding(932);
+                Console.WriteLine("Encoding: shift-jis");
+            }
+            else
+            {
+                cshVars.EncodingFlag = 0;
+                csvEncoding = Encoding.UTF8;
+                Console.WriteLine("Encoding: UTF8");
             }
 
-            using (var dcmpStream = new MemoryStream())
-            {
-                dcmpStream.Write(dcmpCshData, 0, (int)cshVars.DcmpSize);
-                dcmpStream.Seek(0, SeekOrigin.Begin);
-
-                Console.WriteLine("Reading csh entries....");
-                Console.WriteLine("");
-
-                using (var dcmpCshReader = new BinaryReader(dcmpStream))
-                {
-                    // Read dcmp header values
-                    // and do basic checks
-                    if (dcmpCshReader.BaseStream.Length < 12)
-                    {
-                        SupportMethods.ErrorExit("csh file is too small in size!");
-                    }
-
-                    _ = dcmpCshReader.BaseStream.Position = 0;
-
-                    if (dcmpCshReader.ReadBytesUInt32(true) != cshVars.DcmpMagic)
-                    {
-                        SupportMethods.ErrorExit("Not a valid csh file!");
-                    }
-
-                    cshVars.FieldCount = dcmpCshReader.ReadBytesUInt32(true);
-                    cshVars.RowsCount = dcmpCshReader.ReadBytesUInt32(true);
-
-                    Console.WriteLine($"Field Count: {cshVars.FieldCount}");
-                    Console.WriteLine($"Rows Count: {cshVars.RowsCount}");
-                    Console.WriteLine("");
-
-                    var entryTablePos = dcmpCshReader.BaseStream.Position;
-
-                    // Read each entry and write to a csv file
-                    var outCsvFile = Path.Combine(Path.GetDirectoryName(cshFile), Path.GetFileNameWithoutExtension(cshFile) + ".csv");
-
-                    if (File.Exists(outCsvFile))
-                    {
-                        File.Delete(outCsvFile);
-                    }
-
-                    using (var csvWriter = new StreamWriter(outCsvFile, true, Encoding.UTF8))
-                    {
-                        var currentPos = entryTablePos;
-
-                        for (int i = 0; i < cshVars.RowsCount; i++)
-                        {
-                            for (int j = 0; j < cshVars.FieldCount; j++)
-                            {
-                                _ = dcmpCshReader.BaseStream.Position = currentPos;
-
-                                cshVars.EntryDataOffset = dcmpCshReader.ReadBytesUInt32(true);
-                                cshVars.EntryDataType = dcmpCshReader.ReadByte();
-                                _ = dcmpCshReader.ReadByte();
-                                cshVars.EntryDataSizeMultiplier = dcmpCshReader.ReadBytesUInt16(true);
-
-                                _ = dcmpCshReader.BaseStream.Position = cshVars.EntryDataOffset;
-                                cshVars.EntryData.AddRange(dcmpCshReader.ReadBytes(cshVars.EntryDataSizeMultiplier * 4));
-
-                                switch (cshVars.EntryDataType)
-                                {
-                                    // string
-                                    case 0:
-                                        var readStringValue = SupportMethods.FixStringFromCsh(Encoding.UTF8.GetString(cshVars.EntryData.ToArray()));
-                                        cshVars.EntryOnCSV += readStringValue;
-                                        break;
-
-                                    // int
-                                    case 64:
-                                        if (cshVars.EntryDataSizeMultiplier * 4 == 4)
-                                        {
-                                            var readValueArray = cshVars.EntryData.ToArray();
-                                            Array.Reverse(readValueArray);
-
-                                            cshVars.EntryIntValue = BitConverter.ToInt32(readValueArray, 0);
-                                            cshVars.EntryOnCSV += cshVars.EntryIntValue.ToString();
-                                        }
-                                        break;
-
-                                    // float
-                                    case 128:
-                                        if (cshVars.EntryDataSizeMultiplier * 4 == 4)
-                                        {
-                                            var readValueArray = cshVars.EntryData.ToArray();
-                                            Array.Reverse(readValueArray);
-
-                                            cshVars.EntryFloatValue = BitConverter.ToSingle(readValueArray, 0);
-                                            cshVars.EntryOnCSV += cshVars.EntryFloatValue.ToString() + "f";
-                                        }
-                                        break;
-
-                                    // empty
-                                    case 192:
-                                        break;
-
-                                    // unknown
-                                    default:
-                                        cshVars.EntryOnCSV += $"0x{cshVars.EntryDataType.ToString("X2")}";
-                                        break;
-                                }
-
-                                if (j != cshVars.FieldCount - 1)
-                                {
-                                    cshVars.EntryOnCSV += cshVars.CSVDelimiter;
-                                }
-
-                                cshVars.EntryData.Clear();
-
-                                currentPos += 8;
-                            }
-
-                            Console.WriteLine($"Entry_{i}: {cshVars.EntryOnCSV}");
-                            csvWriter.WriteLine(cshVars.EntryOnCSV);
-                            cshVars.EntryOnCSV = string.Empty;
-                        }
-                    }
-                }
-            }
-
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("Finished writing csh data to csv file");
-        }
-        #endregion
-
-
-        #region -csh
-        public static void ConvertToCsh(string csvFile)
-        {
-            var cshVars = new CshVariables();
-
-            var csvData = File.ReadAllLines(csvFile);
+            var csvData = File.ReadAllLines(csvFile, csvEncoding);
 
             if (csvData.Length == 0)
             {
@@ -211,7 +50,7 @@ namespace WoFFCshTool
                 using (var preCmpHeaderWriter = new BinaryWriter(preCmpHeaderStream))
                 {
                     _ = preCmpHeaderWriter.BaseStream.Position = 0;
-                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.DcmpMagic, true);
+                    preCmpHeaderWriter.WriteBytesUInt32(cshVars.EncodingFlag, true);
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.FieldCount, true);
                     preCmpHeaderWriter.WriteBytesUInt32(cshVars.RowsCount, true);
                     headerSize = preCmpHeaderWriter.BaseStream.Length;
@@ -244,7 +83,7 @@ namespace WoFFCshTool
                         currentEntryData = entryData.Split(cshVars.CSVDelimiter);
 
                         cshVars.EntryData = new List<byte>();
-                       
+
                         foreach (var entryField in currentEntryData)
                         {
                             byte[] currentEntryDataBytes = Array.Empty<byte>();
@@ -264,8 +103,8 @@ namespace WoFFCshTool
                                 cshVars.EntryDataSizeMultiplier = 1;
                                 currentEntryDataBytes = BitConverter.GetBytes(cshVars.EntryFloatValue);
                                 Array.Reverse(currentEntryDataBytes);
-                                offset += 4;                                
-                            } 
+                                offset += 4;
+                            }
                             else if (int.TryParse(entryField, NumberStyles.Integer, CultureInfo.InvariantCulture, out cshVars.EntryIntValue) == true)
                             {
                                 // int
@@ -293,7 +132,7 @@ namespace WoFFCshTool
 
                                     var readStringVal = entryField + "\0";
                                     cshVars.EntryStringVal = SupportMethods.FixStringFromCsv(readStringVal);
-                                    var currentEntryStringList = Encoding.UTF8.GetBytes(cshVars.EntryStringVal).ToList();
+                                    var currentEntryStringList = csvEncoding.GetBytes(cshVars.EntryStringVal).ToList();
                                     var currentEntryStringValSize = currentEntryStringList.Count;
 
                                     if (currentEntryStringValSize % 4 != 0)
@@ -411,7 +250,6 @@ namespace WoFFCshTool
             Console.WriteLine("Finished writing csv data to csh file");
         }
 
-
         private static void PadReservedBytes(BinaryWriter cshStreamWriter, int padAmount)
         {
             for (int l = 0; l < padAmount; l++)
@@ -419,6 +257,5 @@ namespace WoFFCshTool
                 cshStreamWriter.WriteBytesUInt32(0, false);
             }
         }
-        #endregion
     }
 }

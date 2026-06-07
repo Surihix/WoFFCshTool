@@ -11,6 +11,7 @@ This program allows you to convert the csh database files from World of Final Fa
 <br>``WoFFCshTool.exe -? ``
 <br>``WoFFCshTool.exe -csv "map_encount_table.csh" ``
 <br>``WoFFCshTool.exe -csh "map_encount_table.csv" ``
+<br>``WoFFCshTool.exe -csh "map_encount_table.csv" --shift-jis ``
 
 ## Important notes
 - The program requires .net 6.0 Desktop Runtime to be installed on your PC. you can get it from this [page](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
@@ -18,6 +19,8 @@ This program allows you to convert the csh database files from World of Final Fa
 - The csh file or csv file has to be specified after the tool action argument switches.
 
 - If you drag n drop a csh file on the tool, it will convert the file to csv file. similarly if you drag n drop a csv file on the tool, it will convert the file to csh.
+
+- When converting the csv file to csh, if the csv file was saved in shift-jis encoding, then make sure to specify the `--shift-jis` switch after the filepath.
 
 - Floating point type values will have a `f` string character, appended after the last digit. if you are entering a floating point value, then make sure to put the `f` string character after the last digit.
 

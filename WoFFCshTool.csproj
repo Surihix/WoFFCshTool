@@ -5,10 +5,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Copyright>Copyright © Surihix 2025</Copyright>
+    <Copyright>Copyright © Surihix 2026</Copyright>
     <Company>Surihix</Company>
-    <FileVersion>1.0.0.3</FileVersion>
-    <AssemblyVersion>1.0.0.3</AssemblyVersion>
+    <FileVersion>1.0.0.4</FileVersion>
+    <AssemblyVersion>1.0.0.4</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
